@@ -1,0 +1,211 @@
+CREATE TABLE "Product" (
+    "id" SERIAL PRIMARY KEY,                    -- Auto-incrementing primary key
+    "name" VARCHAR(255) NOT NULL,               -- Product name
+    "price" DECIMAL(10, 2) NOT NULL CHECK ("price" >= 0),  -- Price with constraint (positive value)
+    "is_sale" BOOLEAN DEFAULT FALSE,           -- Sale status, defaults to false
+    "inventory" INTEGER NOT NULL DEFAULT 0,    -- Inventory count, non-null with a default value of 0
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- Timestamp of creation, non-null
+    CONSTRAINT "price_check" CHECK ("price" > 0) -- Custom check to ensure price is always positive
+);
+
+
+
+Select * FROM "Product";
+
+Select "Name" FROM "Product";
+
+SELECT "ID" AS "Product_ID", "is_Sale" AS "For_Sale FROM "Product";
+
+
+SELECT "ID" AS "Product_ID", "is_Sale" AS "For_Sale" FROM "Product" Where "Name" = 'TV';
+
+SELECT * FROM "Product" WHERE "is_Sale" = false AND "Inventory">=6 ORDER BY "Inventory" ASC ,"Price" DESC;
+
+SELECT * FROM "Product" WHERE "is_Sale" = false AND "Inventory" BETWEEN 6 AND 20 ORDER BY "Inventory" ASC ,"Price" DESC;
+
+SELECT * FROM "Product" WHERE "is_Sale" = false AND "Inventory" = 6 OR "Inventory" = 20 ORDER BY "Inventory" ASC ,"Price" DESC;
+
+SELECT * FROM "Product" WHERE "is_Sale" = false AND "ID" IN (1,5,7,8)ORDER BY "Inventory" ASC ,"Price" DESC;
+
+SELECT * FROM "Product" WHERE "Name" LIKE'%Mobile%';
+
+
+INSERT INTO "Product" ("Name","Price","is_Sale","Inventory") VALUES ('GoldRing',95000, true,1000) RETURNING "ID";
+
+UPDATE "Product" SET "Name" = 'Gold' WHERE "ID" = 24 RETURNING *;
+
+Subqueries
+---------
+SELECT * 
+FROM "Product" 
+WHERE "Price" = (SELECT MAX("Price") FROM "Product");
+
+(SELECT SUM("Price") AS "TOTAL_STOCK_PRICE" FROM "Product");
+
+
+need to learn 
+
+Joins: Understanding how to combine data from multiple tables using different types of joins (INNER JOIN, LEFT JOIN, RIGHT JOIN, FULL OUTER JOIN).
+
+Aggregations with GROUP BY: Using GROUP BY to aggregate data by groups, with functions like COUNT(), AVG(), MIN(), and MAX().
+
+Window Functions: Learn how to use window functions (e.g., ROW_NUMBER(), RANK(), SUM() OVER()).
+
+Learing table for GROUP BY , HAVING
+
+CREATE TABLE "Products" (
+    "id" SERIAL PRIMARY KEY,                     -- Auto-incrementing primary key
+    "name" VARCHAR(255) NOT NULL,                -- Product name
+    "category" VARCHAR(255) NOT NULL,            -- Product category
+    "price" DECIMAL(10, 2) NOT NULL CHECK ("price" >= 0),   -- Price with constraint (positive value)
+    "is_sale" BOOLEAN DEFAULT FALSE,            -- Sale status, defaults to false
+    "inventory" INTEGER NOT NULL DEFAULT 0,     -- Inventory count, non-null with a default value of 0
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP -- Timestamp of creation
+);
+
+-- Inserting data into the Products table
+INSERT INTO "Products" ("name", "category", "price", "is_sale", "inventory")
+VALUES 
+('Mobile', 'Electronics', 10000.00, TRUE, 50),
+('Laptop', 'Electronics', 50000.00, FALSE, 30),
+('Shirt', 'Clothing', 1500.00, TRUE, 100),
+('Jeans', 'Clothing', 2000.00, FALSE, 60),
+('Headphones', 'Electronics', 3000.00, TRUE, 80),
+('Shoes', 'Clothing', 2500.00, FALSE, 20),
+('Smartwatch', 'Electronics', 8000.00, TRUE, 40),
+('Jacket', 'Clothing', 4000.00, TRUE, 120),
+('Tablet', 'Electronics', 15000.00, FALSE, 10),
+('Socks', 'Clothing', 500.00, FALSE, 200);
+
+1)How many products are there in each category (Electronics, Clothing)? Use GROUP BY to get the count of products for each category.
+
+SELECT "category", Count("name") AS "Count of Products" FROM "ProD" GROUP BY "category";
+
+2)What is the average price of products in each category? Only return categories where the average price is greater than 5000. Use GROUP BY and HAVING.
+
+SELECT "category" FROM "ProD" GROUP BY "category" Having AVG("price") >5000;
+
+3)How many products are on sale (is_sale = TRUE)? Group the results by sale status and count the number of products in each group.
+SELECT Count("name"),"is_sale" FROM "ProD" GROUP BY "is_sale" HAVING "is_sale" = true;
+
+4)Group the products by their sale status (is_sale) and find out how many products are on sale and how many are not on sale.
+
+SELECT Count("name"),"is_sale" FROM "ProD" GROUP BY "is_sale";
+
+5)What is the total inventory for each product category? Only include categories where the total inventory is greater than 100. Use GROUP BY and HAVING.
+
+SELECT "category",SUM("inventory") AS "TOTAL inventory " FROM "ProD" GROUP BY "category" HAVING SUM("inventory")>100;
+
+6)Question 5: Find Categories With Total Sales Price Greater Than 100,000
+Calculate the total sales price for each category by multiplying the price of each product with its inventory. Only return categories where the total sales price is greater than 100,000. Use GROUP BY and HAVING.
+
+SELECT "category",SUM("price"*"inventory") AS "TOTAL SALES " FROM "ProD" GROUP BY "category" HAVING SUM("price"* "inventory") >100000;
+
+
+joins 
+-----
+
+-- Create employee table
+CREATE TABLE employee (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50),
+    age INT,
+    dept_id INT
+);
+
+-- Create department table
+CREATE TABLE department (
+    id SERIAL PRIMARY KEY,
+    dept_name VARCHAR(50)
+);
+
+-- Create location table
+CREATE TABLE location (
+    id SERIAL PRIMARY KEY,
+    dept_id INT,
+    location_name VARCHAR(50)
+);
+
+----------------------------------------------
+
+-- Insert into department
+INSERT INTO department (dept_name) VALUES 
+('HR'),
+('Engineering'),
+('Sales'),
+('Marketing');
+
+-- Insert into location
+INSERT INTO location (dept_id, location_name) VALUES 
+(1, 'New York'),
+(2, 'San Francisco'),
+(3, 'Chicago'),
+(4, 'Los Angeles');
+
+-- Insert into employee
+INSERT INTO employee (name, age, dept_id) VALUES 
+('Alice', 30, 1),
+('Bob', 25, 2),
+('Charlie', 28, 2),
+('David', 35, 3),
+('Eve', 29, 4),
+('Frank', 40, NULL);  -- No department assigned
+
+-------------------------------------
+
+Question 1
+List all employees along with their department names.
+
+(even if they don't belong to any department)
+
+SELECT e.name,d.dept_name FROM "employee" as e INNER JOIN "department" as d ON e.dept_id = d.id;
+
+
+Question 2
+List all employees' names, their department names, and the location names.
+
+SELECT e.name,d.dept_name , l.location_name FROM "employee" as e INNER JOIN "department" as d ON e.dept_id = d.id INNER JOIN "location" AS l ON d.id = l.dept_id;
+
+Question 3
+Find the names of employees who work in 'Engineering' department.
+
+SELECT e.name FROM "employee" as e INNER JOIN "department" as d ON e.dept_id = d.id where d.dept_name = 'Engineering'; 
+
+Question 4
+Show all departments along with employees working in them (even if no employees are assigned).
+
+SELECT d.dept_name, e.name FROM "employee" as e LEFT OUTER JOIN "department" as d ON e.dept_id = d.id ;
+
+Question 5
+Find the location name where 'David' works.
+SELECT l.location_name FROM "employee" AS e JOIN "location" AS l ON e.dept_id = l.dept_id where e.name = 'David';
+
+6)
+Find each department's name and the number of employees working in it.
+(Show departments even if 0 employees are there.)
+
+SELECT 
+    d.dept_name,
+    COUNT(e.name) AS employee_count
+FROM 
+    department AS d
+LEFT JOIN 
+    employee AS e ON d.id = e.dept_id
+GROUP BY 
+    d.dept_name;
+
+7)
+List all employees whose department location is in 'New York'.
+
+Hint: You need to join all 3 tables (employee, department, location)
+Filter by location_name = 'New York'.
+
+SELECT e.name FROM "department" AS d  JOIN "employee" AS e ON d.id = e.dept_id JOIN location AS l  
+ON e.dept_id = l.dept_id where l.location_name = 'New York'
+
+8) 
+list employees who are not belongs to any location 
+
+SELECT e.name FROM "department" AS d  full outer JOIN "employee" AS e ON d.id = e.dept_id full JOIN location AS l  
+ON e.dept_id = l.dept_id where e.dept_id is NULL;
+
