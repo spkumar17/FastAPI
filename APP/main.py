@@ -133,17 +133,35 @@ def delete_Post(id: int, db: Session = Depends(get_db)):
 def update_Post(post: post_data, id: int, db: Session = Depends(get_db)):
     
     post_query = db.query(models.Post).filter(models.Post.id == id)
-    post = post_query.first()
+    new_post = post_query.first()
 
     
-    if  post is None:
+    if  new_post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post {id} was not found in list to update")
     
     post_query.update(post.dict(), synchronize_session=False)
     db.commit()
 
+# Converts the Pydantic object to a dictionary:post_data(title="New Title", content="Updated text")  post_data.dict ===> {'title': 'New Title', 'content': 'Updated text'}
+# Translates to SQL: UPDATE posts SET title='New Title', content='Updated text' WHERE id=3
+# synchronize_session=False skips syncing in-memory objects, improving performance
+# db.commit() applies and saves the update permanently to the database
+
     return {"message": f"Post {id}'s info updated",
-                "data":  post_query.first()
+                "data":  post_query.first() # this will fetch the newly updated post after saving   post_query.first()
                 }
+
+# Explanationn
+# post_query = db.query(models.Post).filter(models.Post.id == id)
+# → This creates a SQLAlchemy query object to find a post with the given ID — but doesn’t execute it yet.
+
+# post = post_query.first()
+# → Executes the query to fetch the actual post from the database and stores it in the post variable (an instance of the ORM model, not the Pydantic model).
+
+# post_query.update(post_data.dict(), synchronize_session=False)
+# → Updates the database row with the new values provided in the request body (post_data, a Pydantic model), converting it to a dictionary with .dict().
+
+# db.commit()
+# → Permanently saves the updated values to the database.    
 
 
