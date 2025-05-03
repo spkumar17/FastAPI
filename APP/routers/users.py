@@ -8,7 +8,7 @@ from schema import Retrieve_userdata ,Users_data
 from typing import List
 import utils
 
-router = APIRouter()
+router = APIRouter(tags = ["Users"])
 
 
 

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from schema import post_data , Retrieve_data
 from typing import List
 
-router = APIRouter()
+router = APIRouter(tags = ["Posts"])
 
 @router.get("/Posts", response_model=List[Retrieve_data])
 def retrieve(db: Session = Depends(get_db)): #You're injecting a database session using FastAPI's Depends.
