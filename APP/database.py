@@ -1,7 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import psycopg2
+import psycopg2  
+
+# SQLAlchemy needs a database driver to talk to PostgreSQL.
+# By default, SQLAlchemy does not include a PostgreSQL driver — you need to install one separately.
+# The most commonly used PostgreSQL driver is:
+# psycopg2 (or the lightweight version: psycopg2-binary)
 from psycopg2.extras import RealDictCursor
 import time
 
@@ -73,4 +78,3 @@ def get_db():
 #         print("Database connection failed")
 #         print("Error:", error)
 #         time.sleep(5)  # Wait 5 seconds before retrying (not 50!)
-        

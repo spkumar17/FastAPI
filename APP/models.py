@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP,text
+from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP,func
 from database import Base
+
 
 # declarative_base() is an inbuilt function from SQLAlchemy.
 # It creates a base class (usually named Base).
@@ -15,4 +16,13 @@ class Post(Base):
     post_name = Column(String, nullable = False)
     description  = Column(String, nullable = False)
     published = Column(Boolean, default = True, nullable = False)
-    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('null()'))
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
+
+
+class Users(Base):
+    __tablename__ = "users" # Table name
+    id = Column(Integer, primary_key = True, nullable = False,autoincrement=True)
+    user_name = Column(String, nullable = False)
+    email_id = Column(String, nullable = False,unique = True)
+    password   = Column(String, nullable = False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=func.now())

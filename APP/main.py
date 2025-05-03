@@ -1,14 +1,11 @@
-from fastapi import FastAPI, Response, status, HTTPException ,Depends  # type: ignore
-from fastapi.params import Body  # type: ignore
-from pydantic import BaseModel  # type: ignore
-import psycopg2
-from psycopg2.extras import RealDictCursor
+from fastapi import FastAPI, status, HTTPException ,Depends  # type: ignore
 import time
 from database import Base, engine, get_db
 import models
 from sqlalchemy.orm import Session
-from schema import post_data , retrive_data
+from schema import post_data , Retrieve_data,Retrieve_userdata ,Users_data 
 from typing import List
+import utils
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -16,7 +13,7 @@ models.Base.metadata.create_all(bind=engine)
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
-@app.get("/Posts", response_model=List[retrive_data])
+@app.get("/Posts", response_model=List[Retrieve_data])
 def retrieve(db: Session = Depends(get_db)): #You're injecting a database session using FastAPI's Depends.
 
     all_posts = db.query(models.Post).all()  #This line queries the post table (from your models module).   .all() fetches all rows as a list.
@@ -27,7 +24,7 @@ def retrieve(db: Session = Depends(get_db)): #You're injecting a database sessio
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,detail="No posts found") 
 
 
-@app.post("/Posts/create", status_code=status.HTTP_201_CREATED,response_model=retrive_data)
+@app.post("/Posts/create", status_code=status.HTTP_201_CREATED,response_model=Retrieve_data)
 def create_new_post(post : post_data, db: Session = Depends(get_db)):
                     #variable : #pyantic # db session using fastapi depends
     # new_post = models.Post(post_name=post.post_name, description= post.description,published = post.published)
@@ -45,7 +42,7 @@ def create_new_post(post : post_data, db: Session = Depends(get_db)):
 # -------------------------------------
 # GET endpoint to fetch all Published posts
 # -------------------------------------
-@app.get("/Posts/published",response_model=List[retrive_data])
+@app.get("/Posts/published",response_model=List[Retrieve_data])
 def get_published_Posts(db: Session = Depends(get_db)):
     
     post_Published = db.query(models.Post).filter(models.Post.published == True).all()
@@ -56,7 +53,7 @@ def get_published_Posts(db: Session = Depends(get_db)):
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No posts Published yet") 
     
-@app.get("/Posts/unpublished",response_model=List[retrive_data])
+@app.get("/Posts/unpublished",response_model=List[Retrieve_data])
 def get_published_Posts(db: Session = Depends(get_db)):
     
     post_unPublished = db.query(models.Post).filter(models.Post.published == False).all()
@@ -67,7 +64,7 @@ def get_published_Posts(db: Session = Depends(get_db)):
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No unPublished post presents")     
       
-@app.get("/Posts/{id}",response_model=retrive_data)
+@app.get("/Posts/{id}",response_model=Retrieve_data)
 def get_Post_by_id(id :int, db: Session = Depends(get_db)):
     
     Post_by_id = db.query(models.Post).filter(models.Post.id == id).first()
@@ -83,7 +80,7 @@ def get_Post_by_id(id :int, db: Session = Depends(get_db)):
 # # GET endpoint to fetch the most recent post
 # # -------------------------------------
  
-@app.get("/Posts/recent",response_model= retrive_data)
+@app.get("/Posts/recent",response_model= Retrieve_data)
 def get_recent_userinfo( db: Session = Depends(get_db)): 
     
     recent_post = (db.query(models.Post).filter(models.Post.published == True).order_by(models.Post.created_at.desc()).first())
@@ -107,7 +104,7 @@ def get_recent_userinfo( db: Session = Depends(get_db)):
 # # # URL format: /usersinfo/delete/{name}
 # # # -------------------------------------
 
-@app.delete("/Posts/delete/{id}",response_model= retrive_data)   
+@app.delete("/Posts/delete/{id}",response_model= Retrieve_data)   
 def delete_Post(id: int, db: Session = Depends(get_db)):
 
     # Query the post to check if it exists
@@ -130,7 +127,7 @@ def delete_Post(id: int, db: Session = Depends(get_db)):
 # # # update endpoint to update users by id
 # # # -------------------------------------    
 
-@app.put("/Posts/update/{id}",response_model= retrive_data)
+@app.put("/Posts/update/{id}",response_model= Retrieve_data)
 def update_Post(post: post_data, id: int, db: Session = Depends(get_db)):
     
     post_query = db.query(models.Post).filter(models.Post.id == id)
@@ -162,5 +159,24 @@ def update_Post(post: post_data, id: int, db: Session = Depends(get_db)):
 
 # db.commit()
 # → Permanently saves the updated values to the database.    
+
+
+# Users.......................................
+
+
+@app.post("/Users/create", status_code=status.HTTP_201_CREATED,response_model=Retrieve_userdata)
+def create_new_post(user : Users_data , db: Session = Depends(get_db)):
+    
+    #Hash the password
+    
+    hashed_password =  utils.hash(user.password)
+    user.password = hashed_password
+
+    new_User = models.Users(**user.dict()) #When you want to create a new record (like a new post), you're not querying existing data—you're inserting a new entry. Hence, you don't need to use db.query() for creation.
+    db.add(new_User)# Adding the new object to the session
+    db.commit() # Committing to the database (actually saving the new post)
+    db.refresh(new_User) # Refreshing the object to get the latest info (like autogenerated fields)
+    
+    return new_User
 
 

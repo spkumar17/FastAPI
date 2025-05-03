@@ -1,6 +1,6 @@
 # # connecting to database using psycopg2
 # from fastapi import FastAPI, Response, status, HTTPException  # type: ignore
-# from fastapi.params import Body  # type: ignore
+# from fastapi.params import Body  # type: ignore # type: ignore Body(...) tells FastAPI to expect this value in the request body, not as a query or path parameter.
 # from pydantic import BaseModel  # type: ignore
 # import psycopg2
 # from psycopg2.extras import RealDictCursor
