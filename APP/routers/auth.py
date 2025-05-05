@@ -1,18 +1,21 @@
-from fastapi import FastAPI, status, HTTPException ,Depends , APIRouter # type: ignore
+from fastapi import status, HTTPException ,Depends , APIRouter # type: ignore
 from database import get_db
-import models
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+import models 
 from sqlalchemy.orm import Session
-from schema import Users_cred
 import utils
+import Oauth2
 
 
 router = APIRouter(tags = ["Authentication"])
 
 
 @router.post("/login")
-def create_new_post(User_Credentials : Users_cred , db: Session = Depends(get_db)):
-    
-    user_verify = db.query(models.users).filter(models.users.email_id == User_Credentials.email_id).first()
+def create_new_post(User_Credentials : OAuth2PasswordRequestForm = Depends() , db: Session = Depends(get_db)):
+    # if we use OAuth2PasswordRequestForm we no longer need to send the data in body instead it will use a form with username and password
+    # email_id will be called as username 
+    # password 
+    user_verify = db.query(models.Users).filter(models.Users.email_id == User_Credentials.username).first()
     
     if user_verify  is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Invalid Credentials") 
@@ -22,12 +25,6 @@ def create_new_post(User_Credentials : Users_cred , db: Session = Depends(get_db
     if not verify_password:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Invalid Credentials") 
     
-    return {"verify":"successfully logged in"}
+    token = Oauth2.create_access_token({"id": user_verify.id })
 
-        
-    
-
-        
-        
-    
-    
+    return {"access_token": token, "token_type": "bearer"}
