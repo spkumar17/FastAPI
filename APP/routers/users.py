@@ -1,6 +1,6 @@
 
 # Users.......................................
-from fastapi import FastAPI, status, HTTPException ,Depends , APIRouter # type: ignore
+from fastapi import status, HTTPException ,Depends , APIRouter # type: ignore
 from database import get_db
 import models
 from sqlalchemy.orm import Session
@@ -60,6 +60,3 @@ def users(id: int , db: Session = Depends(get_db)):
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"No users found with name {id}") 
                 
-        
-  
-
