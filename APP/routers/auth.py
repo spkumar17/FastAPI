@@ -18,12 +18,12 @@ def create_new_post(User_Credentials : OAuth2PasswordRequestForm = Depends() , d
     user_verify = db.query(models.Users).filter(models.Users.email_id == User_Credentials.username).first()
     
     if user_verify  is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Invalid Credentials") 
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Invalid Credentials") 
     
     verify_password = utils.verify(User_Credentials.password,user_verify.password )
     
     if not verify_password:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Invalid Credentials") 
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Invalid Credentials") 
     
     token = Oauth2.create_access_token({"user_id": user_verify.id })
 
