@@ -51,12 +51,14 @@ class Retrieve_userdata(PYDANTIC_MODEL):
         orm_mode = True        
         
 
-# class Users_cred(PYDANTIC_MODEL):
-#     """
-#     Pydantic model to define the structure of data.
-#     This ensures that the data coming to the API is validated and properly formatted.
-#     """
-#     email_id: EmailStr
-#     password:str
+class Users_cred(PYDANTIC_MODEL):
+    
+    email_id: EmailStr
+    password:str
 
-            
+class token(PYDANTIC_MODEL):
+    access_token: str
+    access_type: str 
+
+class tokendata(PYDANTIC_MODEL):
+    id : int    

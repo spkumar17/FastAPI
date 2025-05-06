@@ -25,6 +25,6 @@ def create_new_post(User_Credentials : OAuth2PasswordRequestForm = Depends() , d
     if not verify_password:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Invalid Credentials") 
     
-    token = Oauth2.create_access_token({"id": user_verify.id })
+    token = Oauth2.create_access_token({"user_id": user_verify.id })
 
     return {"access_token": token, "token_type": "bearer"}
