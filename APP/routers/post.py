@@ -1,3 +1,4 @@
+import Oauth2
 from fastapi import status, HTTPException ,Depends ,APIRouter # type: ignore
 from database import get_db
 import models
@@ -8,7 +9,7 @@ from typing import List
 router = APIRouter(tags = ["Posts"])
 
 @router.get("/Posts", response_model=List[Retrieve_data])
-def retrieve(db: Session = Depends(get_db)): #You're injecting a database session using FastAPI's Depends.
+def retrieve(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)): #You're injecting a database session using FastAPI's Depends.
 
     all_posts = db.query(models.Post).all()  #This line queries the post table (from your models module).   .all() fetches all rows as a list.
     
@@ -19,7 +20,7 @@ def retrieve(db: Session = Depends(get_db)): #You're injecting a database sessio
 
 
 @router.post("/Posts/create", status_code=status.HTTP_201_CREATED,response_model=Retrieve_data)
-def create_new_post(post : post_data, db: Session = Depends(get_db)):
+def create_new_post(post : post_data, db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
                     #variable : #pyantic # db session using fastapi depends
     # new_post = models.Post(post_name=post.post_name, description= post.description,published = post.published)
     # db.add(new_post) # Adding the new object to the session
@@ -37,7 +38,7 @@ def create_new_post(post : post_data, db: Session = Depends(get_db)):
 # GET endpoint to fetch all Published posts
 # -------------------------------------
 @router.get("/Posts/published",response_model=List[Retrieve_data])
-def get_published_Posts(db: Session = Depends(get_db)):
+def get_published_Posts(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
     
     post_Published = db.query(models.Post).filter(models.Post.published == True).all()
 
@@ -48,7 +49,7 @@ def get_published_Posts(db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No posts Published yet") 
     
 @router.get("/Posts/unpublished",response_model=list[Retrieve_data])
-def get_published_Posts(db: Session = Depends(get_db)):
+def get_published_Posts(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
     
     post_unPublished = db.query(models.Post).filter(models.Post.published == False).all()
 
@@ -59,7 +60,7 @@ def get_published_Posts(db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No unPublished post presents")     
       
 @router.get("/Posts/{id}",response_model=Retrieve_data)
-def get_Post_by_id(id :int, db: Session = Depends(get_db)):
+def get_Post_by_id(id :int, db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
     
     Post_by_id = db.query(models.Post).filter(models.Post.id == id).first()
     
@@ -75,7 +76,7 @@ def get_Post_by_id(id :int, db: Session = Depends(get_db)):
 # # -------------------------------------
  
 @router.get("/Posts/recent",response_model= Retrieve_data)
-def get_recent_userinfo( db: Session = Depends(get_db)): 
+def get_recent_userinfo( db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)): 
     
     recent_post = (db.query(models.Post).filter(models.Post.published == True).order_by(models.Post.created_at.desc()).first())
     
@@ -99,7 +100,7 @@ def get_recent_userinfo( db: Session = Depends(get_db)):
 # # # -------------------------------------
 
 @router.delete("/Posts/delete/{id}",response_model= Retrieve_data)   
-def delete_Post(id: int, db: Session = Depends(get_db)):
+def delete_Post(id: int, db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
 
     # Query the post to check if it exists
     post_to_delete = db.query(models.Post).filter(models.Post.id == id).first()
@@ -122,7 +123,7 @@ def delete_Post(id: int, db: Session = Depends(get_db)):
 # # # -------------------------------------    
 
 @router.put("/Posts/update/{id}",response_model= Retrieve_data)
-def update_Post(post: post_data, id: int, db: Session = Depends(get_db)):
+def update_Post(post: post_data, id: int, db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
     
     post_query = db.query(models.Post).filter(models.Post.id == id)
     new_post = post_query.first()

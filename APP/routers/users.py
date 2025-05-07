@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from schema import Retrieve_userdata ,Users_data 
 from typing import List
 import utils
-
+import Oauth2
 router = APIRouter(tags = ["Users"])
 
 
@@ -29,7 +29,7 @@ def create_new_post(user : Users_data , db: Session = Depends(get_db)):
     return new_User
 
 @router.get("/Users",response_model=List[Retrieve_userdata])
-def users( db: Session = Depends(get_db)):
+def users( db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
     
     all_users = db.query(models.Users).all()  #This line queries the post table (from your models module).   .all() fetches all rows as a list.
     #SELECT users.id, users.user_name, users.email_id, users.password, users.created_at FROM users;
@@ -40,8 +40,8 @@ def users( db: Session = Depends(get_db)):
     
     
 
-@router.get("/Users/{user}",response_model=List[Retrieve_userdata])
-def users(user: str , db: Session = Depends(get_db)):
+@router.get("/Users/{name}",response_model=List[Retrieve_userdata])
+def users(user: str , db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
     
     all_users = db.query(models.Users).filter(models.Users.user_name == user).all()
     if len(all_users) > 0:
@@ -52,7 +52,7 @@ def users(user: str , db: Session = Depends(get_db)):
 
 
 @router.get("/Users_by_id/{id}",response_model=Retrieve_userdata)
-def users(id: int , db: Session = Depends(get_db)):
+def users(id: int , db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
     
     users_id = db.query(models.Users).filter(models.Users.id == id).first()
     if users_id is not None:
