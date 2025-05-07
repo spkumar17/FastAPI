@@ -125,8 +125,11 @@ def delete_Post(id: int, db: Session = Depends(get_db),current_user: int = Depen
 @router.put("/Posts/update/{id}",response_model= Retrieve_data)
 def update_Post(post: post_data, id: int, db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
     
-    post_query = db.query(models.Post).filter(models.Post.id == id)
-    new_post = post_query.first()
+    post_query = db.query(models.Post).filter(models.Post.id == id) 
+    # this post_query contain A query object, it is the object that SQLAlchemy generates when you construct a query, but you haven't executed it yet.
+
+
+    new_post = post_query.first() # Adding methods to query objects like .first(),.all() will return the result immediately..
 
     
     if  new_post is None:
