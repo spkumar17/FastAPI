@@ -19,6 +19,18 @@ def retrieve(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.ge
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,detail="No posts found") 
 
 
+@router.get("/MyPosts", response_model=List[Retrieve_data]) #
+def retrieve(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)): #You're injecting a database session using FastAPI's Depends.
+
+    all_posts = db.query(models.Post).filter(models.Post.owner_id == current_user.id).all()
+  #This line queries the post table (from your models module).   .all() fetches all rows as a list.
+    
+    if len(all_posts) > 0:
+        return all_posts
+    else:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,detail="No posts found") 
+
+
 @router.post("/Posts/create", status_code=status.HTTP_201_CREATED,response_model=Retrieve_data)
 def create_new_post(post : post_data, db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
                     #variable : #pyantic # db session using fastapi depends
