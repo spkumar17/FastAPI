@@ -1,6 +1,6 @@
 from fastapi import status, HTTPException ,Depends , APIRouter # type: ignore
 from database import get_db
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 import models 
 from sqlalchemy.orm import Session
 import utils

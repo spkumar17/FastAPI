@@ -4,14 +4,16 @@ from database import get_db
 import models
 from sqlalchemy.orm import Session
 from schema import post_data , Retrieve_data
-from typing import List
+from typing import List , Optional
+
 
 router = APIRouter(tags = ["Posts"])
 
 @router.get("/Posts", response_model=List[Retrieve_data])
-def retrieve(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)): #You're injecting a database session using FastAPI's Depends.
+def retrieve(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user),limit: int = 10, skip: int = 0, Search: Optional[str] = ""): #You're injecting a database session using FastAPI's Depends.
+# # limit and skip are used for pagination are called query parameters in the context of FastAPI. and Search is an optional query parameter for filtering posts by name.
 
-    all_posts = db.query(models.Post).all()  #This line queries the post table (from your models module).   .all() fetches all rows as a list.
+    all_posts = db.query(models.Post).filter(models.Post.post_name.contains(Search)).limit(limit).offset(skip).all()  #This line queries the post table (from your models module).   .all() fetches all rows as a list.
     
     if len(all_posts) > 0:
         return all_posts

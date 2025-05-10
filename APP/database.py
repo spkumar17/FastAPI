@@ -1,16 +1,19 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import psycopg2  
-
+from config import settings
+# SQLAlchemy is an ORM (Object Relational Mapper) for Python.
 # SQLAlchemy needs a database driver to talk to PostgreSQL.
 # By default, SQLAlchemy does not include a PostgreSQL driver — you need to install one separately.
 # The most commonly used PostgreSQL driver is:
 # psycopg2 (or the lightweight version: psycopg2-binary)
 from psycopg2.extras import RealDictCursor
-import time
+# RealDictCursor is a cursor class that returns rows as dictionaries instead of tuples.
+# This is useful when you want to access columns by name instead of index.
 
-SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:Cloud%40123@localhost:5432/FastAPI'
+SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.DB_USERNAME}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+
+
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 # This creates a connection to your PostgreSQL server.
