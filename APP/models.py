@@ -30,3 +30,12 @@ class Users(Base):
     email_id = Column(String, nullable = False,unique = True)
     password   = Column(String, nullable = False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
+    
+    
+class vote(Base):
+    __tablename__ = "votes" # Table name
+    post_id = Column(Integer, ForeignKey("posts.id",ondelete="CASCADE"), primary_key = True)
+    user_id = Column(Integer, ForeignKey("users.id",ondelete="CASCADE"), primary_key = True)
+    
+    post = relationship("Post")  # One-to-many
+    user = relationship("Users")  # One-to-many

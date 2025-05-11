@@ -2,38 +2,41 @@ import Oauth2
 from fastapi import status, HTTPException ,Depends ,APIRouter # type: ignore
 from database import get_db
 import models
-from sqlalchemy.orm import Session
-from schema import post_data , Retrieve_data
+from sqlalchemy.orm import Session 
+from schema import post_data , Retrieve_data ,Retrieve_post_data_with_vote
 from typing import List , Optional
+from sqlalchemy import func
 
 
 router = APIRouter(tags = ["Posts"])
 
-@router.get("/Posts", response_model=List[Retrieve_data])
+@router.get("/Posts", response_model=List[Retrieve_post_data_with_vote]) #This line defines a GET endpoint at the path "/Posts" and specifies that the response will be a list of Retrieve_data objects.
 def retrieve(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user),limit: int = 10, skip: int = 0, Search: Optional[str] = ""): #You're injecting a database session using FastAPI's Depends.
 # # limit and skip are used for pagination are called query parameters in the context of FastAPI. and Search is an optional query parameter for filtering posts by name.
 
-    all_posts = db.query(models.Post).filter(models.Post.post_name.contains(Search)).limit(limit).offset(skip).all()  #This line queries the post table (from your models module).   .all() fetches all rows as a list.
-    
+    # all_posts = db.query(models.Post).filter(models.Post.post_name.contains(Search)).limit(limit).offset(skip).all()  #This line queries the post table (from your models module).   .all() fetches all rows as a list.
+    all_posts = db.query(models.Post, func.count(models.vote.post_id).label("votes")).join(models.vote, models.vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.post_name.contains(Search)).limit(limit).offset(skip).all()
+
     if len(all_posts) > 0:
         return all_posts
     else:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,detail="No posts found") 
 
 
-@router.get("/MyPosts", response_model=List[Retrieve_data]) #
+@router.get("/MyPosts", response_model=List[Retrieve_post_data_with_vote]) #
 def retrieve(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)): #You're injecting a database session using FastAPI's Depends.
 
-    all_posts = db.query(models.Post).filter(models.Post.owner_id == current_user.id).all()
+    # all_posts = db.query(models.Post).filter(models.Post.owner_id == current_user.id).all()
   #This line queries the post table (from your models module).   .all() fetches all rows as a list.
-    
+    all_posts = db.query(models.Post, func.count(models.vote.post_id).label("votes")).join(models.vote, models.vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.owner_id == current_user.id).all()
+
     if len(all_posts) > 0:
         return all_posts
     else:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,detail="No posts found") 
 
 
-@router.post("/Posts/create", status_code=status.HTTP_201_CREATED,response_model=Retrieve_data)
+@router.post("/Posts/create", status_code=status.HTTP_201_CREATED,response_model=Retrieve_post_data_with_vote)
 def create_new_post(post : post_data, db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
                     #variable : #pyantic # db session using fastapi depends
     # new_post = models.Post(post_name=post.post_name, description= post.description,published = post.published)
@@ -51,10 +54,12 @@ def create_new_post(post : post_data, db: Session = Depends(get_db),current_user
 # -------------------------------------
 # GET endpoint to fetch all Published posts
 # -------------------------------------
-@router.get("/Posts/published",response_model=List[Retrieve_data])
+@router.get("/Posts/published",response_model=List[Retrieve_post_data_with_vote])
 def get_published_Posts(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
     
-    post_Published = db.query(models.Post).filter(models.Post.published == True).all()
+    # post_Published = db.query(models.Post).filter(models.Post.published == True).all()
+    post_Published = db.query(models.Post, func.count(models.vote.post_id).label("votes")).join(models.vote, models.vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.published == True).all()
+
 
     
     if post_Published != 0:
@@ -62,10 +67,12 @@ def get_published_Posts(db: Session = Depends(get_db),current_user: int = Depend
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No posts Published yet") 
     
-@router.get("/Posts/unpublished",response_model=list[Retrieve_data])
+@router.get("/Posts/unpublished",response_model=list[Retrieve_post_data_with_vote])
 def get_published_Posts(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
     
-    post_unPublished = db.query(models.Post).filter(models.Post.published == False).all()
+    # post_unPublished = db.query(models.Post).filter(models.Post.published == False).all()
+    post_unPublished = db.query(models.Post, func.count(models.vote.post_id).label("votes")).join(models.vote, models.vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.published == True).all()
+
 
     
     if post_unPublished != 0:
@@ -73,27 +80,17 @@ def get_published_Posts(db: Session = Depends(get_db),current_user: int = Depend
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No unPublished post presents")     
       
-@router.get("/Posts/{id}",response_model=Retrieve_data)
-def get_Post_by_id(id :int, db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
-    
-    Post_by_id = db.query(models.Post).filter(models.Post.id == id).first()
-    
-    if Post_by_id is not None:  #In Python, psycopg2's fetchone() method returns None when no row is found. So, checking for 0 doesn't work in this case because the default return value for no result is None, not 0.
-        return Post_by_id
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No Post find with id {id}")    
-   
-   
+      
 
 # # -------------------------------------
 # # GET endpoint to fetch the most recent post
 # # -------------------------------------
  
-@router.get("/Posts/recent",response_model= Retrieve_data)
+@router.get("/Posts/recent",response_model= Retrieve_post_data_with_vote)
 def get_recent_userinfo( db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)): 
     
-    recent_post = (db.query(models.Post).filter(models.Post.published == True).order_by(models.Post.created_at.desc()).first())
-    
+    # recent_post = db.query(models.Post).filter(models.Post.published == True).order_by(models.Post.created_at.desc()).first()
+    recent_post= db.query(models.Post, func.count(models.vote.post_id).label("votes")).join(models.vote, models.vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).order_by(models.Post.created_at.desc()).first()
     if recent_post is not None:
         return recent_post
         
@@ -103,10 +100,11 @@ def get_recent_userinfo( db: Session = Depends(get_db),current_user: int = Depen
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No posts Published yet") 
     
 
-@router.get("/MyPosts/recent",response_model= Retrieve_data)
+@router.get("/MyPosts/recent",response_model= Retrieve_post_data_with_vote)
 def get_recent_userinfo( db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)): 
     
-    myrecent_post = db.query(models.Post).filter(models.Post.published == True,models.Post.owner_id == current_user.id).order_by(models.Post.created_at.desc()).first()
+    # myrecent_post = db.query(models.Post).filter(models.Post.published == True,models.Post.owner_id == current_user.id).order_by(models.Post.created_at.desc()).first()
+    myrecent_post = db.query(models.Post, func.count(models.vote.post_id).label("votes")).join(models.vote, models.vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.owner_id == current_user.id).order_by(models.Post.created_at.desc()).first()
     
     if myrecent_post is not None:
        
@@ -116,6 +114,22 @@ def get_recent_userinfo( db: Session = Depends(get_db),current_user: int = Depen
         
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No posts Published yet")     
     
+
+      
+@router.get("/Posts/{id}",response_model=Retrieve_post_data_with_vote)
+def get_Post_by_id(id :int, db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
+    
+    # Post_by_id = db.query(models.Post).filter(models.Post.id == id).first()
+    Post_by_id = db.query(models.Post, func.count(models.vote.post_id).label("votes")).join(models.vote, models.vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.id == id).first()
+
+    
+    
+    if Post_by_id is not None:  #In Python, psycopg2's fetchone() method returns None when no row is found. So, checking for 0 doesn't work in this case because the default return value for no result is None, not 0.
+        return Post_by_id
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No Post find with id {id}")    
+   
+   
 
     
 # # # -------------------------------------
