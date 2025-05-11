@@ -9,6 +9,7 @@ from sqlalchemy import func
 
 
 router = APIRouter(tags = ["Posts"])
+# So I have experienced an issue like while getting the output of the API. thing is like it was due to response model. So I have created a new response model based on the original output and I have added a new response model to it. So it got rectified. 
 
 @router.get("/Posts", response_model=List[Retrieve_post_data_with_vote]) #This line defines a GET endpoint at the path "/Posts" and specifies that the response will be a list of Retrieve_data objects.
 def retrieve(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user),limit: int = 10, skip: int = 0, Search: Optional[str] = ""): #You're injecting a database session using FastAPI's Depends.

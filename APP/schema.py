@@ -46,17 +46,18 @@ class Retrieve_data(post_data):
     """
     id: int
     created_at: datetime
-    owner : Retrieve_userdata
+    owner : Retrieve_userdata # instance of Retrieve_userdata(inhertied this from retrive_userdata)
     
     class Config:
         orm_mode = True    
     
 class Retrieve_post_data_with_vote(PYDANTIC_MODEL):  # 
+    """So like recently I have experienced an issue like while getting the output of the API. 
+    One thing is like it was due to response model. So I have created a new response model based on the original output 
+    and I have added a new response model to it. So it got rectified. 
+
     """
-    Pydantic model to define the structure of data.
-    This ensures that the data comming out from API is in desired formatted.
-    """
-    Post :Retrieve_data
+    Post :Retrieve_data # instance of Retrieve_data(inhertied this from retrive_data)
     votes: int
     
     class Config:
