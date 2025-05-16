@@ -63,6 +63,8 @@ def verify_access_token(token: token,credentials_exception):  # token is from AP
         # it will return token_data.id  # gives you 7
 
     except JWTError:
-        raise credentials_exception
+        raise credentials_exception   # If validation fails (jwt.decode fails) , you'll get the credentials_exception error.
+
+
     
     return token_data
