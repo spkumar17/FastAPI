@@ -46,7 +46,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
-def verify_access_token(token: token,credentials_exception):  # token is from 
+def verify_access_token(token: token,credentials_exception):  # token is from APP.schema
     
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
