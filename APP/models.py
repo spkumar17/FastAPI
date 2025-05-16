@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP,func,ForeignKey,ForeignKeyConstraint
 from sqlalchemy.orm import relationship
-from database import Base
+from APP.database import Base
 
 
 # declarative_base() is an inbuilt function from SQLAlchemy.

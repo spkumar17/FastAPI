@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from config import settings
+from APP.config import settings
 # SQLAlchemy is an ORM (Object Relational Mapper) for Python.
 # SQLAlchemy needs a database driver to talk to PostgreSQL.
 # By default, SQLAlchemy does not include a PostgreSQL driver — you need to install one separately.

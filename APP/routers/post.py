@@ -1,9 +1,9 @@
-import Oauth2
+import APP.Oauth2
 from fastapi import status, HTTPException ,Depends ,APIRouter # type: ignore
-from database import get_db
-import models
+from APP.database import get_db
+import APP.models
 from sqlalchemy.orm import Session 
-from schema import post_data , Retrieve_data ,Retrieve_post_data_with_vote
+from APP.schema import post_data , Retrieve_data ,Retrieve_post_data_with_vote
 from typing import List , Optional
 from sqlalchemy import func
 
@@ -12,11 +12,11 @@ router = APIRouter(tags = ["Posts"])
 # So I have experienced an issue like while getting the output of the API. thing is like it was due to response model. So I have created a new response model based on the original output and I have added a new response model to it. So it got rectified. 
 
 @router.get("/Posts", response_model=List[Retrieve_post_data_with_vote]) #This line defines a GET endpoint at the path "/Posts" and specifies that the response will be a list of Retrieve_data objects.
-def retrieve(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user),limit: int = 10, skip: int = 0, Search: Optional[str] = ""): #You're injecting a database session using FastAPI's Depends.
+def retrieve(db: Session = Depends(get_db),current_user: int = Depends(APP.Oauth2.get_current_user),limit: int = 10, skip: int = 0, Search: Optional[str] = ""): #You're injecting a APP.database session using FastAPI's Depends.
 # # limit and skip are used for pagination are called query parameters in the context of FastAPI. and Search is an optional query parameter for filtering posts by name.
 
-    # all_posts = db.query(models.Post).filter(models.Post.post_name.contains(Search)).limit(limit).offset(skip).all()  #This line queries the post table (from your models module).   .all() fetches all rows as a list.
-    all_posts = db.query(models.Post, func.count(models.vote.post_id).label("votes")).join(models.vote, models.vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.post_name.contains(Search)).limit(limit).offset(skip).all()
+    # all_posts = db.query(APP.models.Post).filter(APP.models.Post.post_name.contains(Search)).limit(limit).offset(skip).all()  #This line queries the post table (from your APP.models module).   .all() fetches all rows as a list.
+    all_posts = db.query(APP.models.Post, func.count(APP.models.vote.post_id).label("votes")).join(APP.models.vote, APP.models.vote.post_id == APP.models.Post.id, isouter=True).group_by(APP.models.Post.id).filter(APP.models.Post.post_name.contains(Search)).limit(limit).offset(skip).all()
 
     if len(all_posts) > 0:
         return all_posts
@@ -25,11 +25,11 @@ def retrieve(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.ge
 
 
 @router.get("/MyPosts", response_model=List[Retrieve_post_data_with_vote]) #
-def retrieve(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)): #You're injecting a database session using FastAPI's Depends.
+def retrieve(db: Session = Depends(get_db),current_user: int = Depends(APP.Oauth2.get_current_user)): #You're injecting a APP.database session using FastAPI's Depends.
 
-    # all_posts = db.query(models.Post).filter(models.Post.owner_id == current_user.id).all()
-  #This line queries the post table (from your models module).   .all() fetches all rows as a list.
-    all_posts = db.query(models.Post, func.count(models.vote.post_id).label("votes")).join(models.vote, models.vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.owner_id == current_user.id).all()
+    # all_posts = db.query(APP.models.Post).filter(APP.models.Post.owner_id == current_user.id).all()
+  #This line queries the post table (from your APP.models module).   .all() fetches all rows as a list.
+    all_posts = db.query(APP.models.Post, func.count(APP.models.vote.post_id).label("votes")).join(APP.models.vote, APP.models.vote.post_id == APP.models.Post.id, isouter=True).group_by(APP.models.Post.id).filter(APP.models.Post.owner_id == current_user.id).all()
 
     if len(all_posts) > 0:
         return all_posts
@@ -38,15 +38,15 @@ def retrieve(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.ge
 
 
 @router.post("/Posts/create", status_code=status.HTTP_201_CREATED,response_model=Retrieve_post_data_with_vote)
-def create_new_post(post : post_data, db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
+def create_new_post(post : post_data, db: Session = Depends(get_db),current_user: int = Depends(APP.Oauth2.get_current_user)):
                     #variable : #pyantic # db session using fastapi depends
-    # new_post = models.Post(post_name=post.post_name, description= post.description,published = post.published)
+    # new_post = APP.models.Post(post_name=post.post_name, description= post.description,published = post.published)
     # db.add(new_post) # Adding the new object to the session
-    # db.commit() # Committing to the database (actually saving the new post)
+    # db.commit() # Committing to the APP.database (actually saving the new post)
     # db.refresh(new_post)
-    new_post = models.Post(owner_id=current_user.id,**post.dict()) #When you want to create a new record (like a new post), you're not querying existing data—you're inserting a new entry. Hence, you don't need to use db.query() for creation.
+    new_post = APP.models.Post(owner_id=current_user.id,**post.dict()) #When you want to create a new record (like a new post), you're not querying existing data—you're inserting a new entry. Hence, you don't need to use db.query() for creation.
     db.add(new_post)# Adding the new object to the session
-    db.commit() # Committing to the database (actually saving the new post)
+    db.commit() # Committing to the APP.database (actually saving the new post)
     db.refresh(new_post) # Refreshing the object to get the latest info (like autogenerated fields)
     
     
@@ -56,10 +56,10 @@ def create_new_post(post : post_data, db: Session = Depends(get_db),current_user
 # GET endpoint to fetch all Published posts
 # -------------------------------------
 @router.get("/Posts/published",response_model=List[Retrieve_post_data_with_vote])
-def get_published_Posts(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
+def get_published_Posts(db: Session = Depends(get_db),current_user: int = Depends(APP.Oauth2.get_current_user)):
     
-    # post_Published = db.query(models.Post).filter(models.Post.published == True).all()
-    post_Published = db.query(models.Post, func.count(models.vote.post_id).label("votes")).join(models.vote, models.vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.published == True).all()
+    # post_Published = db.query(APP.models.Post).filter(APP.models.Post.published == True).all()
+    post_Published = db.query(APP.models.Post, func.count(APP.models.vote.post_id).label("votes")).join(APP.models.vote, APP.models.vote.post_id == APP.models.Post.id, isouter=True).group_by(APP.models.Post.id).filter(APP.models.Post.published == True).all()
 
 
     
@@ -69,10 +69,10 @@ def get_published_Posts(db: Session = Depends(get_db),current_user: int = Depend
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No posts Published yet") 
     
 @router.get("/Posts/unpublished",response_model=list[Retrieve_post_data_with_vote])
-def get_published_Posts(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
+def get_published_Posts(db: Session = Depends(get_db),current_user: int = Depends(APP.Oauth2.get_current_user)):
     
-    # post_unPublished = db.query(models.Post).filter(models.Post.published == False).all()
-    post_unPublished = db.query(models.Post, func.count(models.vote.post_id).label("votes")).join(models.vote, models.vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.published == True).all()
+    # post_unPublished = db.query(APP.models.Post).filter(APP.models.Post.published == False).all()
+    post_unPublished = db.query(APP.models.Post, func.count(APP.models.vote.post_id).label("votes")).join(APP.models.vote, APP.models.vote.post_id == APP.models.Post.id, isouter=True).group_by(APP.models.Post.id).filter(APP.models.Post.published == True).all()
 
 
     
@@ -88,10 +88,10 @@ def get_published_Posts(db: Session = Depends(get_db),current_user: int = Depend
 # # -------------------------------------
  
 @router.get("/Posts/recent",response_model= Retrieve_post_data_with_vote)
-def get_recent_userinfo( db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)): 
+def get_recent_userinfo( db: Session = Depends(get_db),current_user: int = Depends(APP.Oauth2.get_current_user)): 
     
-    # recent_post = db.query(models.Post).filter(models.Post.published == True).order_by(models.Post.created_at.desc()).first()
-    recent_post= db.query(models.Post, func.count(models.vote.post_id).label("votes")).join(models.vote, models.vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).order_by(models.Post.created_at.desc()).first()
+    # recent_post = db.query(APP.models.Post).filter(APP.models.Post.published == True).order_by(APP.models.Post.created_at.desc()).first()
+    recent_post= db.query(APP.models.Post, func.count(APP.models.vote.post_id).label("votes")).join(APP.models.vote, APP.models.vote.post_id == APP.models.Post.id, isouter=True).group_by(APP.models.Post.id).order_by(APP.models.Post.created_at.desc()).first()
     if recent_post is not None:
         return recent_post
         
@@ -102,10 +102,10 @@ def get_recent_userinfo( db: Session = Depends(get_db),current_user: int = Depen
     
 
 @router.get("/MyPosts/recent",response_model= Retrieve_post_data_with_vote)
-def get_recent_userinfo( db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)): 
+def get_recent_userinfo( db: Session = Depends(get_db),current_user: int = Depends(APP.Oauth2.get_current_user)): 
     
-    # myrecent_post = db.query(models.Post).filter(models.Post.published == True,models.Post.owner_id == current_user.id).order_by(models.Post.created_at.desc()).first()
-    myrecent_post = db.query(models.Post, func.count(models.vote.post_id).label("votes")).join(models.vote, models.vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.owner_id == current_user.id).order_by(models.Post.created_at.desc()).first()
+    # myrecent_post = db.query(APP.models.Post).filter(APP.models.Post.published == True,APP.models.Post.owner_id == current_user.id).order_by(APP.models.Post.created_at.desc()).first()
+    myrecent_post = db.query(APP.models.Post, func.count(APP.models.vote.post_id).label("votes")).join(APP.models.vote, APP.models.vote.post_id == APP.models.Post.id, isouter=True).group_by(APP.models.Post.id).filter(APP.models.Post.owner_id == current_user.id).order_by(APP.models.Post.created_at.desc()).first()
     
     if myrecent_post is not None:
        
@@ -118,10 +118,10 @@ def get_recent_userinfo( db: Session = Depends(get_db),current_user: int = Depen
 
       
 @router.get("/Posts/{id}",response_model=Retrieve_post_data_with_vote)
-def get_Post_by_id(id :int, db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
+def get_Post_by_id(id :int, db: Session = Depends(get_db),current_user: int = Depends(APP.Oauth2.get_current_user)):
     
-    # Post_by_id = db.query(models.Post).filter(models.Post.id == id).first()
-    Post_by_id = db.query(models.Post, func.count(models.vote.post_id).label("votes")).join(models.vote, models.vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.id == id).first()
+    # Post_by_id = db.query(APP.models.Post).filter(APP.models.Post.id == id).first()
+    Post_by_id = db.query(APP.models.Post, func.count(APP.models.vote.post_id).label("votes")).join(APP.models.vote, APP.models.vote.post_id == APP.models.Post.id, isouter=True).group_by(APP.models.Post.id).filter(APP.models.Post.id == id).first()
 
     
     
@@ -139,10 +139,10 @@ def get_Post_by_id(id :int, db: Session = Depends(get_db),current_user: int = De
 # # # -------------------------------------
 
 @router.delete("/Posts/delete/{id}", response_model=Retrieve_data)
-def delete_Post(id: int, db: Session = Depends(get_db), current_user: models.Users = Depends(Oauth2.get_current_user)):
+def delete_Post(id: int, db: Session = Depends(get_db), current_user: APP.models.Users = Depends(APP.Oauth2.get_current_user)):
 
     # Query the post instance
-    delete_post = db.query(models.Post).filter(models.Post.id == id).first()
+    delete_post = db.query(APP.models.Post).filter(APP.models.Post.id == id).first()
 
     if delete_post is None:
         raise HTTPException(
@@ -170,9 +170,9 @@ def delete_Post(id: int, db: Session = Depends(get_db), current_user: models.Use
 # # # -------------------------------------    
 
 @router.put("/Posts/update/{id}",response_model= Retrieve_data)
-def update_Post(post: post_data, id: int, db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
+def update_Post(post: post_data, id: int, db: Session = Depends(get_db),current_user: int = Depends(APP.Oauth2.get_current_user)):
     
-    post_query = db.query(models.Post).filter(models.Post.id == id) 
+    post_query = db.query(APP.models.Post).filter(APP.models.Post.id == id) 
     # this post_query contain A query object, it is the object that SQLAlchemy generates when you construct a query, but you haven't executed it yet.
 
 
@@ -190,20 +190,20 @@ def update_Post(post: post_data, id: int, db: Session = Depends(get_db),current_
 # Converts the Pydantic object to a dictionary:post_data(title="New Title", content="Updated text")  post_data.dict ===> {'title': 'New Title', 'content': 'Updated text'}
 # Translates to SQL: UPDATE posts SET title='New Title', content='Updated text' WHERE id=3
 # synchronize_session=False skips syncing in-memory objects, improving performance
-# db.commit() applies and saves the update permanently to the database
+# db.commit() applies and saves the update permanently to the APP.database
 
     return  post_query.first() # this will fetch the newly updated post after saving   post_query.first()
 
 # Explanationn
-# post_query = db.query(models.Post).filter(models.Post.id == id)
+# post_query = db.query(APP.models.Post).filter(APP.models.Post.id == id)
 # → This creates a SQLAlchemy query object to find a post with the given ID — but doesn’t execute it yet.
 
 # post = post_query.first()
-# → Executes the query to fetch the actual post from the database and stores it in the post variable (an instance of the ORM model, not the Pydantic model).
+# → Executes the query to fetch the actual post from the APP.database and stores it in the post variable (an instance of the ORM model, not the Pydantic model).
 
 # post_query.update(post_data.dict(), synchronize_session=False)
-# → Updates the database row with the new values provided in the request body (post_data, a Pydantic model), converting it to a dictionary with .dict().
+# → Updates the APP.database row with the new values provided in the request body (post_data, a Pydantic model), converting it to a dictionary with .dict().
 
 # db.commit()
-# → Permanently saves the updated values to the database.    
+# → Permanently saves the updated values to the APP.database.    
 
