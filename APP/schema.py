@@ -1,6 +1,9 @@
 
 from datetime import datetime
-from pydantic import BaseModel,EmailStr,conint # type: ignore
+from pydantic import BaseModel,EmailStr # type: ignore
+from typing import Annotated
+from pydantic import Field
+
 # -------------------------------------
 # Pydantic model to validate user input
 # -------------------------------------
@@ -97,5 +100,4 @@ class tokendata(PYDANTIC_MODEL):
     
 class vote(PYDANTIC_MODEL):
     post_id: int
-    direction: conint(le=1) # type: ignore
-    
+    direction: Annotated[int, Field(le=1)]    
