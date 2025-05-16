@@ -62,9 +62,6 @@ def verify_access_token(token: token,credentials_exception):  # token is from AP
         # Pydantic will validate that id(7) is indeed an int (as defined).
         # it will return token_data.id  # gives you 7
 
-
-
-
     except JWTError:
         raise credentials_exception
     
