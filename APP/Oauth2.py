@@ -52,10 +52,16 @@ def verify_access_token(token: token,credentials_exception):  # token is from AP
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         id: str = payload.get("user_id")
         
-        if id is None:
+        if id is None:   # To validate the token and extract the user’s ID from it, so we can later fetch the correct user from the database.
             raise credentials_exception
         token_data = tokendata(id=id) # from APP.schema
-        
+        # You’re creating an object of the tokendata class and initializing it with id.
+        # Pydantic will validate that id(7) is indeed an int (as defined).
+        # it will return token_data.id  # gives you 7
+
+
+
+
     except JWTError:
         raise credentials_exception
     
