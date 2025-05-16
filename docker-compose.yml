@@ -29,9 +29,9 @@ services:
     networks:
       - API_network
     environment:
-      - POSTGRES_USER= postgres
-      - POSTGRES_PASSWORD= Cloud%40123
-      - POSTGRES_DB= FastAPI
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Cloud%40123
+      - POSTGRES_DB=FastAPI
     volumes:
       - API-data:/var/lib/postgresql/data  # corrected path
 
