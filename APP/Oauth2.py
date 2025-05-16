@@ -11,6 +11,11 @@ from fastapi.security import OAuth2PasswordBearer
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
+# "The line oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login') in FastAPI defines a security dependency that extracts a bearer token from the Authorization header of incoming HTTP requests. It’s part of how FastAPI implements OAuth2 password flow for authentication.
+# The tokenUrl='login' parameter specifies the URL endpoint where clients can obtain the token, which is mainly used for automatic API documentation like Swagger UI.
+# This dependency doesn’t validate the token itself; it only retrieves it. The actual token validation and user authentication need to be handled separately, typically by decoding and verifying the JWT token inside the endpoint or a dedicated authentication function."
+
+
 
 # SECRET_KEY 
 # ALGORITHM
