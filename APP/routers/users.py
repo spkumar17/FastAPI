@@ -14,7 +14,7 @@ router = APIRouter(tags = ["Users"])
 
 
 @router.post("/Users/create", status_code=status.HTTP_201_CREATED,response_model=Retrieve_userdata)
-def create_new_post(user : Users_data , db: Session = Depends(get_db)):
+def create_new_user(user : Users_data , db: Session = Depends(get_db)):
     
     #Hash the password
     
