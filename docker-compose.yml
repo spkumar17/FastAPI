@@ -42,3 +42,20 @@ networks:
 volumes:
   API-data:
     driver: local
+
+# make sure to run the following command to start the containers
+# docker-compose up -d
+# make sure to run the following command to stop the containers
+# docker-compose down
+# make sure to run the following command to remove the containers
+# docker-compose rm
+# make sure to run the following command to remove the volumes
+# docker volume rm API-data
+# make sure to run the following command to remove the networks
+# docker network rm API_network
+# make sure to run the following command to remove the images
+# docker rmi backend_container
+# make sure to run the following command to remove the containers and volumes
+# docker-compose down -v
+# make sure to run the following command to remove the containers and networks
+# docker-compose down --volumes --remove-orphans    
