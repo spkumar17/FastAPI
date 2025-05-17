@@ -13,7 +13,7 @@ services:
       - DB_HOST=postgresql
       - DB_PORT=5432
       - DB_USERNAME=postgres
-      - DB_PASSWORD=Cloud0123
+      - DB_PASSWORD=Cloud
       - DB_NAME=FastAPI
       - SECRET_KEY=09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
       - ALGORITHM=HS256
@@ -30,7 +30,7 @@ services:
       - API_network
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=Cloud0123
+      - POSTGRES_PASSWORD=Cloud
       - POSTGRES_DB=FastAPI
     volumes:
       - API-data:/var/lib/postgresql/data  # corrected path
